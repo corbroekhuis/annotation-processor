@@ -1,6 +1,6 @@
-package my.compiler.processing;
+package my.compiler.processor;
 
-import com.capgemini.annotationprocessor.HelloWorld;
+import org.eijsink.annotation.HelloWorld;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -15,9 +15,9 @@ import java.io.Writer;
 import java.util.Set;
 
 @SupportedAnnotationTypes({
-        "com.capgemini.annotationprocessor.HelloWorld"
+        "org.eijsink.annotation.HelloWorld"
 })
-public class MyProcessor extends AbstractProcessor {
+public class HelloWorldProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
@@ -25,25 +25,25 @@ public class MyProcessor extends AbstractProcessor {
     Set<? extends Element> annotatedClasses = roundEnvironment.getElementsAnnotatedWith(HelloWorld.class);
 
         Messager messager = processingEnv.getMessager();
+
         for( Element annotatedClass: annotatedClasses){
-            messager.printMessage(Diagnostic.Kind.NOTE, "Annotated class: " + annotatedClass.getSimpleName());
+
+            messager.printMessage(Diagnostic.Kind.NOTE, "Annotated class: " + annotatedClass.getEnclosingElement());
+            String className = annotatedClass.getEnclosingElement().asType().toString();
+            messager.printMessage(Diagnostic.Kind.NOTE, "classname : " + className);
+
             try {
-                FileObject file = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "resources", annotatedClass.getSimpleName() + "descriptor.xml");
+                FileObject file = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "resources", annotatedClass.getSimpleName() + "descriptor.json");
                 Writer writer = file.openWriter();
-                writer.write("Hello there....");
+                writer.write(
+                        "{ \n\"" +
+                        "   message\": \"Hello there....\"\n" +
+                        "}");
                 writer.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
-
-
-
-
-
-
-
-
+       }
 
         return false;
     }
